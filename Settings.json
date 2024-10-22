@@ -1,0 +1,9 @@
+{
+  "Replacements": [],
+  "Patterns": [
+    "^G3BDB(.+) > $1",
+    "^G3BDG(.+) > $1",
+    "^G3B(.+) > $1"
+  ],
+  "Debug": false
+}
