@@ -95,7 +95,6 @@ namespace ItemAlternates
             long matchCount = 0;
             long llCount = 0;
             long checkCount = 0;
-            List<string> unmatched = [];
             foreach (var item in items)
             {
                 itemCount++;
@@ -166,7 +165,6 @@ namespace ItemAlternates
                     } else
                     {
                         if (Settings.Debug) Console.WriteLine($"No match for {item.EditorID}\n");
-                        unmatched.Add(item)
                     }
                 }
 
