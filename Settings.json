@@ -1,14 +1,20 @@
 {
   "Replacements": [
     "G3BVaerminaRobes > DA16VaerminaRobes",
-    "G3BClothesCollegeRobesJourneyman > ClothesCollegeRobesCommon"
+    "G3BClothesCollegeRobesJourneyman > ClothesCollegeRobesCommon",
+    "SSA_ArmorDraugrCuirass2 > ArmorDraugrCuirass",
+    "SSA_ClothesWenchClothes > ClothesWenchClothes01"
   ],
   "Patterns": [
     "^G3BDB(.+) > DLC2$1",
     "^G3BDB(.+) > $1",
     "^G3BDG(.+) > $1",
     "^G3B(.+) > $1",
-    "(.+)Bikini$ > $1"
+    "(.+)Bikini$ > $1",
+    "^SSA_(.+) > $1",
+    "^SkyTitties(.+) > $1",
+    "^Skytitties(.+) > $1",
+    "^SkyTittie(.+) > $1"
   ],
   "Debug": false
 }
