@@ -95,6 +95,7 @@ namespace ItemAlternates
             long matchCount = 0;
             long llCount = 0;
             long checkCount = 0;
+            HashSet<string> unmatched = [];
             foreach (var item in items)
             {
                 itemCount++;
@@ -113,10 +114,12 @@ namespace ItemAlternates
                         long changes = CloneLLs(state, item, parentItem);
                         Console.WriteLine($"Copied {changes} LL entries.\n");
                         llCount += changes;
+                        unmatched.Remove(item.EditorID);
                         continue;
                     }
 
                     Console.WriteLine($"Could not find parent item {parentName}\n");
+                    unmatched.Add(item.EditorID);
                 }
 
                 if (replacementEIDs.TryGetValue(item.EditorID, out parentName))
@@ -132,10 +135,12 @@ namespace ItemAlternates
                         long changes = CloneLLs(state, item, parentItem);
                         Console.WriteLine($"Copied {changes} LL entries.\n");
                         llCount += changes;
+                        unmatched.Remove(item.EditorID);
                         continue;
                     }
 
                     Console.WriteLine($"Could not find parent item {parentName}\n");
+                    unmatched.Add(item.EditorID);
                 }
 
                 foreach (var entry in patterns)
@@ -158,10 +163,12 @@ namespace ItemAlternates
                             long changes = CloneLLs(state, item, parentItem);
                             Console.WriteLine($"Copied {changes} LL entries.\n");
                             llCount += changes;
+                            unmatched.Remove(item.EditorID);
                             break;
                         }
 
                         Console.WriteLine($"Could not find parent item {parentName}\n");
+                        unmatched.Add(item.EditorID);
                     } else
                     {
                         if (Settings.Debug) Console.WriteLine($"No match for {item.EditorID}\n");
@@ -171,6 +178,12 @@ namespace ItemAlternates
             }
 
             Console.WriteLine($"All done. Checked {itemCount} items with {checkCount} checks. Found {matchCount} matches and cloned {llCount} LL entries.\n");
+            Console.WriteLine("Items matched which could not find a parent:");
+            foreach (var item in unmatched)
+            {
+                Console.WriteLine($"\t{item}");
+            }
+            Console.WriteLine();
         }
 
         private static bool CloneStats(IPatcherState<ISkyrimMod, ISkyrimModGetter> state, IItemGetter item, IItemGetter parentItem)
