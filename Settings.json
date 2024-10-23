@@ -1,16 +1,14 @@
 {
   "Replacements": [
     "G3BVaerminaRobes > DA16VaerminaRobes",
-    "G3BClothesCollegeRobesJourneyman > ClothesCollegeRobesCommon",
-    "NewmTestGlassRobe3 > ClothesNocturnal",
-    "NewmTestGlassRobe4 > ClothesNocturnal",
-    "NewmTestGlassRobe5 > ClothesNocturnal"
+    "G3BClothesCollegeRobesJourneyman > ClothesCollegeRobesCommon"
   ],
   "Patterns": [
     "^G3BDB(.+) > DLC2$1",
     "^G3BDB(.+) > $1",
     "^G3BDG(.+) > $1",
-    "^G3B(.+) > $1"
+    "^G3B(.+) > $1",
+    "(.+)Bikini$ > $1"
   ],
   "Debug": false
 }
