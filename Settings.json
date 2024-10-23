@@ -1,6 +1,7 @@
 {
   "Replacements": [],
   "Patterns": [
+    "^G3BDB(.+) > $1AA",
     "^G3BDB(.+) > $1",
     "^G3BDG(.+) > $1",
     "^G3B(.+) > $1"
