@@ -1,5 +1,5 @@
 # ItemAlternates
-### Skyrim Synergy patcher to semi-automatically create alternate versions of items.
+### Skyrim Synthesis patcher to semi-automatically create alternate versions of items.
 
 Have a bunch of standalone-replacers of items, and want them to spawn as alternate items, like Book of UUNP? 
 ItemAlternates was designed to make doing this at least slightly less tedious.
