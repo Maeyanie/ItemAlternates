@@ -1,12 +1,11 @@
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Synthesis;
 using Mutagen.Bethesda.Skyrim;
-using System.Collections;
 using System.Text.RegularExpressions;
 using Mutagen.Bethesda.Plugins.Aspects;
-using System.Reflection.PortableExecutable;
-using System.Reflection.Metadata.Ecma335;
 using Mutagen.Bethesda.Plugins;
+using Noggog;
+using Newtonsoft.Json;
 
 namespace ItemAlternates
 {
@@ -41,55 +40,74 @@ namespace ItemAlternates
             }
         }
 
-        private static readonly Dictionary<FormKey, string> replacementFKs = [];
-        private static readonly Dictionary<string, string> replacementEIDs = [];
-        private static readonly List<ReplacementEntry> patterns = [];
+        private struct Replacers
+        {
+            public Replacers() { }
+            public Dictionary<FormKey, string> formkey = [];
+            public Dictionary<string, string> editorid = [];
+            public List<ReplacementEntry> pattern = [];
+        }
+        private static readonly Replacers replacers = new();
+
+        private struct PresetFile
+        {
+            public List<string>? Replacements;
+            public List<string>? Patterns;
+        }
 
         public static void RunPatch(IPatcherState<ISkyrimMod, ISkyrimModGetter> state)
         {
-            foreach (string entry in Settings.Replacements)
+            Console.WriteLine("\nLoading custom entries...");
+            LoadPreset(Settings.Replacements, Settings.Patterns);
+
+            if (Settings.LoadPresets)
             {
-                var split = entry.Split('>');
-                if (split.Length != 2)
+                if (state.ExtraSettingsDataPath.HasValue)
                 {
-                    Console.WriteLine($"Invalid manual replacement: {entry}"
-                        + "Format should be: ModItem > OriginalItem");
-                    return;
+                    DirectoryPath path = state.ExtraSettingsDataPath.Value + @"\Presets";
+                    Console.WriteLine($"Loading presets from {path}...");
+                    if (!path.Exists) path.Create();
+                    foreach (var file in path.EnumerateFiles())
+                    {
+                        if (!file.ToString().EndsWith(".json")) continue;
+                        Console.WriteLine($"\t{file}");
+                        try
+                        {
+                            string text = File.ReadAllText(file);
+                            PresetFile preset = JsonConvert.DeserializeObject<PresetFile>(text);
+                            LoadPreset(preset.Replacements, preset.Patterns);
+                        } catch (Exception ex)
+                        {
+                            Console.WriteLine($"Failed reading {file}: {ex.Message}");
+                        }
+                    }
                 }
-
-                var key = split[0].Trim();
-                var value = split[1].Trim();
-
-                if (FormKey.TryFactory(key, out var formKey))
+                DirectoryPath dataPresets = state.DataFolderPath + @"\ItemAlternates";
+                Console.WriteLine($"Loading presets from {dataPresets}...");
+                if (dataPresets.Exists)
                 {
-                    replacementFKs.Add(formKey, value);
-                } else
-                {
-                    replacementEIDs.Add(key, value);
+                    foreach (var file in dataPresets.EnumerateFiles())
+                    {
+                        if (!file.ToString().EndsWith(".json")) continue;
+                        Console.WriteLine($"\t{file}");
+                        try
+                        {
+                            string text = File.ReadAllText(file);
+                            PresetFile preset = JsonConvert.DeserializeObject<PresetFile>(text);
+                            LoadPreset(preset.Replacements, preset.Patterns);
+                        } catch (Exception ex)
+                        {
+                            Console.WriteLine($"Failed reading {file}: {ex.Message}");
+                        }
+                    }
                 }
             }
+            Console.WriteLine("Ready.\n");
 
-            foreach (string entry in Settings.Patterns)
-            {
-                var split = entry.Split('>');
-                if (split.Length != 2)
-                {
-                    Console.WriteLine($"Invalid replacement pattern: {entry}"
-                        + "Format should be: Pattern > Substitution");
-                    return;
-                }
-                try
-                {
-                    patterns.Add(new ReplacementEntry(split[0].Trim(), split[1].Trim()));
-                } catch (Exception e)
-                {
-                    Console.WriteLine($"Failed to compile regular expression pattern \"{split[0].Trim()}\"\n{e.Message}");
-                    return;
-                }
-            }
+
 
             var items = state.LoadOrder.PriorityOrder.IItem().WinningOverrides();
-            Console.WriteLine($"\nChecking {items.Count()} items...");
+            Console.WriteLine($"Checking {items.Count()} items...");
 
             long itemCount = 0;
             long matchCount = 0;
@@ -101,7 +119,7 @@ namespace ItemAlternates
                 itemCount++;
                 if (item.EditorID == null) continue;
 
-                if (replacementFKs.TryGetValue(item.FormKey, out string? parentName))
+                if (replacers.formkey.TryGetValue(item.FormKey, out string? parentName))
                 {
                     Console.WriteLine($"Found match: {item.FormKey} matches {parentName}");
 
@@ -122,7 +140,7 @@ namespace ItemAlternates
                     unmatched.Add(item.EditorID);
                 }
 
-                if (replacementEIDs.TryGetValue(item.EditorID, out parentName))
+                if (replacers.editorid.TryGetValue(item.EditorID, out parentName))
                 {
                     Console.WriteLine($"Found match: {item.EditorID} matches {parentName}");
 
@@ -143,7 +161,7 @@ namespace ItemAlternates
                     unmatched.Add(item.EditorID);
                 }
 
-                foreach (var entry in patterns)
+                foreach (var entry in replacers.pattern)
                 {
                     checkCount++;
                     if (entry.match.IsMatch(item.EditorID))
@@ -393,6 +411,57 @@ namespace ItemAlternates
             }
 
             return null;
+        }
+
+        private static bool LoadPreset(List<string>? replacements, List<string>? patterns)
+        {
+            if (replacements != null)
+            {
+                foreach (string entry in replacements)
+                {
+                    var split = entry.Split('>');
+                    if (split.Length != 2)
+                    {
+                        Console.WriteLine($"Invalid manual replacement: {entry}"
+                            + "Format should be: ModItem > OriginalItem");
+                        return false;
+                    }
+
+                    var key = split[0].Trim();
+                    var value = split[1].Trim();
+
+                    if (FormKey.TryFactory(key, out var formKey))
+                    {
+                        replacers.formkey.TryAdd(formKey, value);
+                    } else
+                    {
+                        replacers.editorid.TryAdd(key, value);
+                    }
+                }
+            }
+
+            if (patterns != null)
+            {
+                foreach (string entry in Settings.Patterns)
+                {
+                    var split = entry.Split('>');
+                    if (split.Length != 2)
+                    {
+                        Console.WriteLine($"Invalid replacement pattern: {entry}"
+                            + "Format should be: Pattern > Substitution");
+                        return false;
+                    }
+                    try
+                    {
+                        replacers.pattern.Add(new ReplacementEntry(split[0].Trim(), split[1].Trim()));
+                    } catch (Exception e)
+                    {
+                        Console.WriteLine($"Failed to compile regular expression pattern \"{split[0].Trim()}\"\n{e.Message}");
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
     }
 }
