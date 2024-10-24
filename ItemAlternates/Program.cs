@@ -7,15 +7,12 @@ using Mutagen.Bethesda.Plugins;
 using Noggog;
 using Newtonsoft.Json;
 
-namespace ItemAlternates
-{
-    public class Program
-    {
+namespace ItemAlternates {
+    public class Program {
         private static Lazy<ProgramSettings>? _settings;
         public static ProgramSettings Settings => _settings?.Value ?? throw new ArgumentNullException();
 
-        public static async Task<int> Main(string[] args)
-        {
+        public static async Task<int> Main(string[] args) {
             return await SynthesisPipeline.Instance
                 .AddPatch<ISkyrimMod, ISkyrimModGetter>(RunPatch)
                 .SetTypicalOpen(GameRelease.SkyrimSE, "ItemAlternates.esp")
@@ -23,25 +20,21 @@ namespace ItemAlternates
                 .Run(args);
         }
 
-        private struct ReplacementEntry
-        {
+        private struct ReplacementEntry {
             public Regex match;
             public string replace;
 
-            public ReplacementEntry(Regex match, string replace)
-            {
+            public ReplacementEntry(Regex match, string replace) {
                 this.match = match;
                 this.replace = replace;
             }
-            public ReplacementEntry(string match, string replace)
-            {
+            public ReplacementEntry(string match, string replace) {
                 this.match = new Regex(match);
                 this.replace = replace;
             }
         }
 
-        private struct Replacers
-        {
+        private struct Replacers {
             public Replacers() { }
             public Dictionary<FormKey, string> formkey = [];
             public Dictionary<string, string> editorid = [];
@@ -49,63 +42,52 @@ namespace ItemAlternates
         }
         private static Replacers replacers;
 
-        private struct PresetFile
-        {
+        private struct PresetFile {
             public List<string>? Replacements;
             public List<string>? Patterns;
         }
 
-        public static void RunPatch(IPatcherState<ISkyrimMod, ISkyrimModGetter> state)
-        {
+        public static void RunPatch(IPatcherState<ISkyrimMod, ISkyrimModGetter> state) {
             replacers = new();
 
             Console.WriteLine("\nLoading custom entries...");
             LoadPreset(Settings.Replacements, Settings.Patterns);
 
-            if (Settings.LoadPresets)
-            {
-                if (state.ExtraSettingsDataPath.HasValue)
-                {
+            if (Settings.LoadPresets) {
+                if (state.ExtraSettingsDataPath.HasValue) {
                     DirectoryPath path = state.ExtraSettingsDataPath.Value + @"\Presets";
                     Console.WriteLine($"Loading presets from {path}...");
                     if (!path.Exists) path.Create();
-                    foreach (var file in path.EnumerateFiles())
-                    {
+                    foreach (var file in path.EnumerateFiles()) {
                         if (!file.ToString().EndsWith(".json")) continue;
                         Console.WriteLine($"\t{file}");
-                        try
-                        {
+                        try {
                             string text = File.ReadAllText(file);
                             PresetFile preset = JsonConvert.DeserializeObject<PresetFile>(text);
                             LoadPreset(preset.Replacements, preset.Patterns);
-                        } catch (Exception ex)
-                        {
+                        } catch (Exception ex) {
                             Console.WriteLine($"Failed reading {file}: {ex.Message}");
                         }
                     }
                 }
                 DirectoryPath dataPresets = state.DataFolderPath + @"\ItemAlternates";
                 Console.WriteLine($"Loading presets from {dataPresets}...");
-                if (dataPresets.Exists)
-                {
-                    foreach (var file in dataPresets.EnumerateFiles())
-                    {
+                if (dataPresets.Exists) {
+                    foreach (var file in dataPresets.EnumerateFiles()) {
                         if (!file.ToString().EndsWith(".json")) continue;
                         Console.WriteLine($"\t{file}");
-                        try
-                        {
+                        try {
                             string text = File.ReadAllText(file);
                             PresetFile preset = JsonConvert.DeserializeObject<PresetFile>(text);
                             LoadPreset(preset.Replacements, preset.Patterns);
-                        } catch (Exception ex)
-                        {
+                        } catch (Exception ex) {
                             Console.WriteLine($"Failed reading {file}: {ex.Message}");
                         }
                     }
                 }
             }
             Console.WriteLine($"Ready. Loaded {replacers.formkey.Count} FormKey patterns, {replacers.editorid.Count} EditorID patterns, "
-                +$"and {replacers.pattern.Count} regex patterns.\n");
+                + $"and {replacers.pattern.Count} regex patterns.\n");
 
 
 
@@ -117,18 +99,15 @@ namespace ItemAlternates
             long llCount = 0;
             long checkCount = 0;
             HashSet<string> unmatched = [];
-            foreach (var item in items)
-            {
+            foreach (var item in items) {
                 itemCount++;
                 if (item.EditorID == null) continue;
 
-                if (replacers.formkey.TryGetValue(item.FormKey, out string? parentName))
-                {
+                if (replacers.formkey.TryGetValue(item.FormKey, out string? parentName)) {
                     Console.WriteLine($"Found match: {item.FormKey} matches {parentName}");
 
                     IItemGetter? parentItem = GetItem(state, parentName);
-                    if (parentItem != null)
-                    {
+                    if (parentItem != null) {
                         if (CloneStats(state, item, parentItem))
                             Console.WriteLine("Copied stats.");
 
@@ -143,13 +122,11 @@ namespace ItemAlternates
                     unmatched.Add(item.EditorID);
                 }
 
-                if (replacers.editorid.TryGetValue(item.EditorID, out parentName))
-                {
+                if (replacers.editorid.TryGetValue(item.EditorID, out parentName)) {
                     Console.WriteLine($"Found match: {item.EditorID} matches {parentName}");
 
                     IItemGetter? parentItem = GetItem(state, parentName);
-                    if (parentItem != null)
-                    {
+                    if (parentItem != null) {
                         if (CloneStats(state, item, parentItem))
                             Console.WriteLine("Copied stats.");
 
@@ -164,11 +141,9 @@ namespace ItemAlternates
                     unmatched.Add(item.EditorID);
                 }
 
-                foreach (var entry in replacers.pattern)
-                {
+                foreach (var entry in replacers.pattern) {
                     checkCount++;
-                    if (entry.match.IsMatch(item.EditorID))
-                    {
+                    if (entry.match.IsMatch(item.EditorID)) {
                         matchCount++;
                         Console.WriteLine($"Found match: {item.EditorID} matches {entry.match}");
 
@@ -176,8 +151,7 @@ namespace ItemAlternates
                         Console.WriteLine($"After replacement, EditorID is: {parentName}");
 
                         IItemGetter? parentItem = GetItem(state, parentName);
-                        if (parentItem != null)
-                        {
+                        if (parentItem != null) {
                             if (CloneStats(state, item, parentItem))
                                 Console.WriteLine("Copied stats.");
 
@@ -190,8 +164,7 @@ namespace ItemAlternates
 
                         Console.WriteLine($"Could not find parent item {parentName}\n");
                         unmatched.Add(item.EditorID);
-                    } else
-                    {
+                    } else {
                         if (Settings.Debug) Console.WriteLine($"No match for {item.EditorID}\n");
                     }
                 }
@@ -200,123 +173,99 @@ namespace ItemAlternates
 
             Console.WriteLine($"All done. Checked {itemCount} items with {checkCount} checks. Found {matchCount} matches and cloned {llCount} LL entries.\n");
             Console.WriteLine("Items matched which could not find a parent:");
-            foreach (var item in unmatched)
-            {
+            foreach (var item in unmatched) {
                 Console.WriteLine($"\t{item}");
             }
             Console.WriteLine();
         }
 
-        private static bool CloneStats(IPatcherState<ISkyrimMod, ISkyrimModGetter> state, IItemGetter item, IItemGetter parentItem)
-        {
-            if (item is IArmorGetter iag)
-            {
+        private static bool CloneStats(IPatcherState<ISkyrimMod, ISkyrimModGetter> state, IItemGetter item, IItemGetter parentItem) {
+            if (item is IArmorGetter iag) {
                 //var armor = state.PatchMod.Armors.GetOrAddAsOverride(item);
                 var armor = iag.DeepCopy();
                 if (parentItem is not IArmorGetter parentArmor) return false;
                 bool dirty = false;
 
-                if (armor.ArmorRating != parentArmor.ArmorRating)
-                {
+                if (armor.ArmorRating != parentArmor.ArmorRating) {
                     armor.ArmorRating = parentArmor.ArmorRating;
                     dirty = true;
                 }
-                if (armor.Weight != parentArmor.Weight)
-                {
+                if (armor.Weight != parentArmor.Weight) {
                     armor.Weight = parentArmor.Weight;
                     dirty = true;
                 }
-                if (armor.Value != parentArmor.Value)
-                {
+                if (armor.Value != parentArmor.Value) {
                     armor.Value = parentArmor.Value;
                     dirty = true;
                 }
 
                 if (dirty) state.PatchMod.Armors.Set(armor);
-            } else if (item is IWeaponGetter iwg)
-            {
+            } else if (item is IWeaponGetter iwg) {
                 //var weapon = state.PatchMod.Weapons.GetOrAddAsOverride(item);
                 var weapon = iwg.DeepCopy();
                 if (parentItem is not IWeaponGetter parentWeapon) return false;
                 if (weapon.BasicStats == null || parentWeapon.BasicStats == null) return false;
                 bool dirty = false;
 
-                if (weapon.BasicStats.Damage != parentWeapon.BasicStats.Damage)
-                {
+                if (weapon.BasicStats.Damage != parentWeapon.BasicStats.Damage) {
                     weapon.BasicStats.Damage = parentWeapon.BasicStats.Damage;
                     dirty = true;
                 }
-                if (weapon.BasicStats.Weight != parentWeapon.BasicStats.Weight)
-                {
+                if (weapon.BasicStats.Weight != parentWeapon.BasicStats.Weight) {
                     weapon.BasicStats.Weight = parentWeapon.BasicStats.Weight;
                     dirty = true;
                 }
-                if (weapon.BasicStats.Value != parentWeapon.BasicStats.Value)
-                {
+                if (weapon.BasicStats.Value != parentWeapon.BasicStats.Value) {
                     weapon.BasicStats.Value = parentWeapon.BasicStats.Value;
                     dirty = true;
                 }
 
                 if (dirty) state.PatchMod.Weapons.Set(weapon);
-            } else if (item is IAmmunitionGetter img)
-            {
+            } else if (item is IAmmunitionGetter img) {
                 var ammo = img.DeepCopy();
                 if (parentItem is not IAmmunitionGetter parentAmmo) return false;
                 bool dirty = false;
 
-                if (ammo.Damage != parentAmmo.Damage)
-                {
+                if (ammo.Damage != parentAmmo.Damage) {
                     ammo.Damage = parentAmmo.Damage;
                     dirty = true;
                 }
-                if (ammo.Weight != parentAmmo.Weight)
-                {
+                if (ammo.Weight != parentAmmo.Weight) {
                     ammo.Weight = parentAmmo.Weight;
                     dirty = true;
                 }
-                if (ammo.Value != parentAmmo.Value)
-                {
+                if (ammo.Value != parentAmmo.Value) {
                     ammo.Value = parentAmmo.Value;
                     dirty = true;
                 }
 
                 if (dirty) state.PatchMod.Ammunitions.Set(ammo);
-            } else if (item is IWeightValueGetter iwvg)
-            {
+            } else if (item is IWeightValueGetter iwvg) {
                 if (iwvg.Weight == ((IWeightValueGetter)parentItem).Weight
                     && iwvg.Value == ((IWeightValueGetter)parentItem).Value) {
                     return false;
                 }
 
                 IWeightValue? newItem = null;
-                if (item is IAlchemicalApparatusGetter)
-                {
+                if (item is IAlchemicalApparatusGetter) {
                     newItem = state.PatchMod.AlchemicalApparatuses.GetOrAddAsOverride(item);
-                } else if (item is IIngestibleGetter)
-                {
+                } else if (item is IIngestibleGetter) {
                     newItem = state.PatchMod.Ingestibles.GetOrAddAsOverride(item);
-                } else if (item is IIngredientGetter)
-                {
+                } else if (item is IIngredientGetter) {
                     newItem = state.PatchMod.Ingredients.GetOrAddAsOverride(item);
-                } else if (item is IKeyGetter)
-                {
+                } else if (item is IKeyGetter) {
                     newItem = state.PatchMod.Keys.GetOrAddAsOverride(item);
-                } else if (item is ILightGetter)
-                {
+                } else if (item is ILightGetter) {
                     newItem = state.PatchMod.Lights.GetOrAddAsOverride(item);
-                } else if (item is IMiscItemGetter)
-                {
+                } else if (item is IMiscItemGetter) {
                     newItem = state.PatchMod.MiscItems.GetOrAddAsOverride(item);
-                } else if (item is IScrollGetter)
-                {
+                } else if (item is IScrollGetter) {
                     newItem = state.PatchMod.Scrolls.GetOrAddAsOverride(item);
-                } else if (item is ISoulGemGetter)
-                {
+                } else if (item is ISoulGemGetter) {
                     newItem = state.PatchMod.SoulGems.GetOrAddAsOverride(item);
                 }
 
-                if (newItem != null)
-                {
+                if (newItem != null) {
                     newItem.Weight = ((IWeightValueGetter)parentItem).Weight;
                     newItem.Value = ((IWeightValueGetter)parentItem).Value;
                 }
@@ -324,27 +273,22 @@ namespace ItemAlternates
             return true;
         }
 
-        private static long CloneLLs(IPatcherState<ISkyrimMod, ISkyrimModGetter> state, IItemGetter item, IItemGetter parentItem)
-        {
+        private static long CloneLLs(IPatcherState<ISkyrimMod, ISkyrimModGetter> state, IItemGetter item, IItemGetter parentItem) {
             long ret = 0;
-            foreach (var li in state.LoadOrder.PriorityOrder.LeveledItem().WinningOverrides())
-            {
+            foreach (var li in state.LoadOrder.PriorityOrder.LeveledItem().WinningOverrides()) {
                 if (li.Entries == null) continue;
 
                 var newLi = li.DeepCopy();
                 if (newLi.Entries == null) continue;
                 bool dirty = false;
 
-                foreach (var lie in li.Entries)
-                {
+                foreach (var lie in li.Entries) {
                     if (lie.Data == null) continue;
-                    if (lie.Data.Reference.FormKey == parentItem.FormKey)
-                    {
+                    if (lie.Data.Reference.FormKey == parentItem.FormKey) {
                         if (Settings.Debug) Console.WriteLine($"Found LL reference: {li.Print()}");
 
                         var newLie = lie.DeepCopy();
-                        if (newLie.Data == null)
-                        {
+                        if (newLie.Data == null) {
                             Console.WriteLine("Copied Levelled Item Data is null!");
                             continue;
                         }
@@ -355,25 +299,21 @@ namespace ItemAlternates
                     }
                 }
 
-                if (dirty)
-                {
+                if (dirty) {
                     if (Settings.Debug) Console.WriteLine($"After patch: {newLi.Print()}");
                     state.PatchMod.LeveledItems.Set(newLi);
                 }
             }
 
-            foreach (var lc in state.LoadOrder.PriorityOrder.Container().WinningOverrides())
-            {
+            foreach (var lc in state.LoadOrder.PriorityOrder.Container().WinningOverrides()) {
                 if (lc.Items == null) continue;
 
                 var newLc = lc.DeepCopy();
                 if (newLc.Items == null) continue;
                 bool dirty = false;
 
-                foreach (var li in lc.Items)
-                {
-                    if (li.Item.Item.FormKey == parentItem.FormKey)
-                    {
+                foreach (var li in lc.Items) {
+                    if (li.Item.Item.FormKey == parentItem.FormKey) {
                         if (Settings.Debug) Console.WriteLine($"Found Container reference: {li.Print()}");
 
                         var newLi = li.DeepCopy();
@@ -384,8 +324,7 @@ namespace ItemAlternates
                     }
                 }
 
-                if (dirty)
-                {
+                if (dirty) {
                     if (Settings.Debug) Console.WriteLine($"After patch: {newLc.Print()}");
                     state.PatchMod.Containers.Set(newLc);
                 }
@@ -393,21 +332,17 @@ namespace ItemAlternates
             return ret;
         }
 
-        private static IItemGetter? GetItem(IPatcherState<ISkyrimMod, ISkyrimModGetter> state, string name)
-        {
+        private static IItemGetter? GetItem(IPatcherState<ISkyrimMod, ISkyrimModGetter> state, string name) {
             IItemGetter? item;
-            if (FormKey.TryFactory(name, out var parentFID))
-            {
-                if (state.LinkCache.TryResolve<IItemGetter>(parentFID, out item))
-                {
+            if (FormKey.TryFactory(name, out var parentFID)) {
+                if (state.LinkCache.TryResolve<IItemGetter>(parentFID, out item)) {
                     if (Settings.Debug) Console.WriteLine($"Found item by FID: {item.Print()}");
                     else Console.WriteLine($"Found item by FID: {item.FormKey}");
                     return item;
                 }
             }
 
-            if (state.LinkCache.TryResolve<IItemGetter>(name, out item))
-            {
+            if (state.LinkCache.TryResolve<IItemGetter>(name, out item)) {
                 if (Settings.Debug) Console.WriteLine($"Found item by EID: {item.Print()}");
                 else Console.WriteLine($"Found item by EID: {item.FormKey}");
                 return item;
@@ -416,15 +351,11 @@ namespace ItemAlternates
             return null;
         }
 
-        private static bool LoadPreset(List<string>? replacements, List<string>? patterns)
-        {
-            if (replacements != null)
-            {
-                foreach (string entry in replacements)
-                {
+        private static bool LoadPreset(List<string>? replacements, List<string>? patterns) {
+            if (replacements != null) {
+                foreach (string entry in replacements) {
                     var split = entry.Split('>');
-                    if (split.Length != 2)
-                    {
+                    if (split.Length != 2) {
                         Console.WriteLine($"Invalid manual replacement: {entry}"
                             + "Format should be: ModItem > OriginalItem");
                         return false;
@@ -433,38 +364,30 @@ namespace ItemAlternates
                     var key = split[0].Trim();
                     var value = split[1].Trim();
 
-                    if (FormKey.TryFactory(key, out var formKey))
-                    {
+                    if (FormKey.TryFactory(key, out var formKey)) {
                         replacers.formkey.TryAdd(formKey, value);
-                    } else
-                    {
+                    } else {
                         replacers.editorid.TryAdd(key, value);
                     }
                 }
             }
 
-            if (patterns != null)
-            {
-                foreach (string entry in patterns)
-                {
+            if (patterns != null) {
+                foreach (string entry in patterns) {
                     var split = entry.Split('>');
-                    if (split.Length != 2)
-                    {
+                    if (split.Length != 2) {
                         Console.WriteLine($"Invalid replacement pattern: {entry}"
                             + "Format should be: Pattern > Substitution");
                         return false;
                     }
-                    try
-                    {
+                    try {
                         replacers.pattern.Add(new ReplacementEntry(split[0].Trim(), split[1].Trim()));
-                    } catch (Exception e)
-                    {
+                    } catch (Exception e) {
                         Console.WriteLine($"Failed to compile regular expression pattern \"{split[0].Trim()}\"\n{e.Message}");
                         return false;
                     }
                 }
-            } else
-            {
+            } else {
                 Console.WriteLine("Patterns is null");
             }
             return true;

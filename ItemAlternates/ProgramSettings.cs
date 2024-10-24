@@ -1,9 +1,7 @@
 using Mutagen.Bethesda.WPF.Reflection.Attributes;
 
-namespace ItemAlternates
-{
-    public class ProgramSettings
-    {
+namespace ItemAlternates {
+    public class ProgramSettings {
         [SettingName("Load Presets")]
         [Tooltip("All .json files in your Extra Settings directory will be loaded and added after the patterns listed below.")]
         public bool LoadPresets { get; set; } = true;
