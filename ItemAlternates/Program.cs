@@ -47,7 +47,7 @@ namespace ItemAlternates
             public Dictionary<string, string> editorid = [];
             public List<ReplacementEntry> pattern = [];
         }
-        private static readonly Replacers replacers = new();
+        private static Replacers replacers;
 
         private struct PresetFile
         {
@@ -57,6 +57,8 @@ namespace ItemAlternates
 
         public static void RunPatch(IPatcherState<ISkyrimMod, ISkyrimModGetter> state)
         {
+            replacers = new();
+
             Console.WriteLine("\nLoading custom entries...");
             LoadPreset(Settings.Replacements, Settings.Patterns);
 
@@ -102,7 +104,8 @@ namespace ItemAlternates
                     }
                 }
             }
-            Console.WriteLine("Ready.\n");
+            Console.WriteLine($"Ready. Loaded {replacers.formkey.Count} FormKey patterns, {replacers.editorid.Count} EditorID patterns, "
+                +$"and {replacers.pattern.Count} regex patterns.\n");
 
 
 
@@ -442,7 +445,7 @@ namespace ItemAlternates
 
             if (patterns != null)
             {
-                foreach (string entry in Settings.Patterns)
+                foreach (string entry in patterns)
                 {
                     var split = entry.Split('>');
                     if (split.Length != 2)
@@ -460,6 +463,9 @@ namespace ItemAlternates
                         return false;
                     }
                 }
+            } else
+            {
+                Console.WriteLine("Patterns is null");
             }
             return true;
         }
