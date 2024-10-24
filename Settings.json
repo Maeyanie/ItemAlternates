@@ -1,7 +1,5 @@
 {
-  "Presets": [
-    "I:\\Downloads\\skyrimse\\Synthesis"
-  ],
+  "LoadPresets": true,
   "Replacements": [
     "G3BVaerminaRobes > DA16VaerminaRobes",
     "G3BClothesCollegeRobesJourneyman > ClothesCollegeRobesCommon",
