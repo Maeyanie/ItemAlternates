@@ -1,10 +1,5 @@
 {
-  "LoadPresets": true,
   "Replacements": [
-    "G3BVaerminaRobes > DA16VaerminaRobes",
-    "G3BClothesCollegeRobesJourneyman > ClothesCollegeRobesCommon",
-    "SSA_ArmorDraugrCuirass2 > ArmorDraugrCuirass",
-    "SSA_ClothesWenchClothes > ClothesWenchClothes01",
     "SkyTittiesDragonbornSkaal > DLC2SkaalVillagerOutfit",
     "SkytittiesDragonbornDarkelf > DLC2DarkElfOutfit",
     "SkyTittiesImperialMedium > ArmorImperialLightCuirass",
@@ -69,18 +64,11 @@
     "SkyTittiesDragobornTemplePriest > DLC2TemplePriestRobes"
   ],
   "Patterns": [
-    "^G3BDB(.+) > DLC2$1",
-    "^G3BDB(.+) > $1",
-    "^G3BDG(.+) > $1",
-    "^G3B(.+) > $1",
-    "(.+)Bikini$ > $1",
-    "^SSA_(.+) > $1",
     "^Sky[Tt]itties?(.+) > $1",
     "^Sky[Tt]itties?(.+) > $1Cuirass",
     "^Sky[Tt]itties?(.+) > Armor$1Cuirass",
     "^Sky[Tt]itties?(.+) > Clothes$1",
     "^Sky[Tt]itties?Dragonborn(.+) > DLC2Clothes$1",
     "^Sky[Tt]itties?Dragonborn(.+) > DLC2Clothes$1Robes"
-  ],
-  "Debug": false
+  ]
 }
