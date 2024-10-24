@@ -1,0 +1,12 @@
+{
+  "Replacements": [
+    "G3BVaerminaRobes > DA16VaerminaRobes",
+    "G3BClothesCollegeRobesJourneyman > ClothesCollegeRobesCommon"
+  ],
+  "Patterns": [
+    "^G3BDB(.+) > DLC2$1",
+    "^G3BDB(.+) > $1",
+    "^G3BDG(.+) > $1",
+    "^G3B(.+) > $1"
+  ]
+}

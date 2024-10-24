@@ -1,0 +1,9 @@
+{
+  "Nickname": "Item Alternates",
+  "Visibility": "Visible",
+  "OneLineDescription": "Semi-automatically attach items as alternates of other items",
+  "LongDescription": "Have a bunch of standalone variants of items, and want them to spawn as alternate items, like Book of UUNP?\nItemAlternates was designed to make doing this at least slightly less tedious.\n\nIt will search your load order for specified FormIDs, EditorIDs, and regex-matched EditorIDs, and look for a specified (using patterns for regex matches) existing item.\n\nWhen one is found, it will clone the basic stats (armour rating, weapon damage, weight, and value) of the item, then add it to all the same levelled list and container spawns, effectively adding it as an alternate model.\n\nSee https://www.nexusmods.com/skyrimspecialedition/mods/132099 for up-to-date information, including a list of mods with included presets.",
+  "PreferredAutoVersioning": "Default",
+  "RequiredMods": [],
+  "TargetedReleases": []
+}

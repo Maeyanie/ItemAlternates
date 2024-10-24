@@ -1,9 +1,0 @@
-{
-  "Replacements": [
-    "SSA_ArmorDraugrCuirass2 > ArmorDraugrCuirass",
-    "SSA_ClothesWenchClothes > ClothesWenchClothes01"
-  ],
-  "Patterns": [
-    "^SSA_(.+) > $1"
-  ]
-}
