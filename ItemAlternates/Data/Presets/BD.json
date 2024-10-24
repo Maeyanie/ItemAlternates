@@ -1,0 +1,7 @@
+{
+  "Replacements": [
+  ],
+  "Patterns": [
+    "^bdrepl_(.+) > $1"
+  ]
+}
