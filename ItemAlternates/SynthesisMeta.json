@@ -1,0 +1,14 @@
+{
+  "Nickname": "ItemAlternates",
+  "Visibility": "Visible",
+  "OneLineDescription": "Automatically(ish) add alternate versions of existing items.",
+  "LongDescription": "Have a bunch of standalone variants of items, and want them to spawn as alternate items, like Book of UUNP?\r\nItemAlternates was designed to make doing this at least slightly less tedious.\r\nSee https://www.nexusmods.com/skyrimspecialedition/mods/132099/ for details.",
+  "PreferredAutoVersioning": "Default",
+  "RequiredMods": [],
+  "TargetedReleases": [
+    "SkyrimSE",
+    "SkyrimVR",
+    "EnderalSE",
+    "SkyrimSEGog"
+  ]
+}
